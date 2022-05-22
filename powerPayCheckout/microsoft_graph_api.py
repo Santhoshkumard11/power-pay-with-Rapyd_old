@@ -1,7 +1,5 @@
 import msal
-import json
 import logging
-import _osx_support
 import requests
 import os
 
@@ -41,13 +39,17 @@ class GraphClient:
         if "access_token" in result:
             self.access_token = result["access_token"]
             logging.info("Successfully retrieved the token")
+        else:
+            logging.info(f"Token can't be fetched, {result['error']}")
 
-    def send_msft_graph_request(self, url: str, method="GET"):
+    def send_msft_graph_request(self, url: str, method="GET", payload=None):
 
-        assert self.access_token
+        # if we don't have an access token then get a new one
+        if not self.access_token:
+            self.get_graph_access_token()
 
         if method == "GET":
-            logging.info(f"Sending in Graph API GET request\nURL-{url}")
+            logging.info(f"Sending in Graph API GET request to - {url}")
             try:
                 graph_result_data = requests.get(
                     url,
@@ -61,8 +63,24 @@ class GraphClient:
             return graph_result_data
 
         else:
-            graph_result_data = requests.get(
-                url,
-                headers={"Authorization": "Bearer " + self.access_token},
-            ).json()
+            assert payload
+
+            logging.info(f"Sending a post request to - {url}")
+
+            try:
+
+                graph_result_data = requests.post(
+                    url,
+                    headers={
+                        "Authorization": "Bearer " + self.access_token,
+                        "Content-Type": "application/json",
+                    },
+                    data=payload,
+                ).json()
+
+            except:
+                logging.error(f"Error while trying to post details for URL - {url}")
+                raise
+
+            logging.info(f"Successfully retrieved details on URL - {url}")
             return graph_result_data

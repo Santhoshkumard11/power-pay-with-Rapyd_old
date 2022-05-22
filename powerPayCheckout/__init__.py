@@ -1,10 +1,14 @@
 import json
 import logging
 import mimetypes
+import re
 import azure.functions as func
 from powerPayCheckout.rapyd_client import generate_checkout_id
 from powerPayCheckout.helpers import get_params
-from powerPayCheckout.webhook import update_sharepoint_list
+from powerPayCheckout.handle_webhook import (
+    create_sharepoint_list,
+    update_sharepoint_list,
+)
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -34,8 +38,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             update_sharepoint_list(req)
             return func.HttpResponse(json.dumps({"status": 900}), status_code=200)
 
-        elif request_type == "new_invoice":
-            pass
+        elif request_type == "create_invoice":
+            return_message = create_sharepoint_list(req)
+            return func.HttpResponse(
+                json.dumps({"message": return_message}), status_code=200
+            )
 
         else:
             with open(checkout_page, "rb") as f:
@@ -46,3 +53,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     except:
         logging.exception("Error occurred while processing the request")
+
+        # return something to the user when things go wrong
+        return func.HttpResponse("There is a error while processing this request.")
