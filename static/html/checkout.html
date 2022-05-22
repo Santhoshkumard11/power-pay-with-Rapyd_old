@@ -88,8 +88,7 @@
     <script src="https://sandboxcheckouttoolkit.rapyd.net"></script>
     <script>
       window.onload = function () {
-
-        let params = (new URL(document.location)).searchParams;
+        let params = new URL(document.location).searchParams;
         let checkoutId = params.get("checkout_id");
 
         let checkout = new RapydCheckoutToolkit({
@@ -122,24 +121,44 @@
       // display information to the user
       function feedback(event) {
         if (event.detail.error) {
-          document.getElementById("title").textContent = "Whoops!";
+          document.getElementById("title").textContent = "Oops, Something went wrong!";
           document.getElementById("message").innerHTML =
             "We cannot process your payment:<br/>" + event.detail.error;
-          document.getElementById("image").src = "img/no-bike.svg";
           document.getElementById("action").textContent = "Try again";
         } else {
           document.getElementById("title").textContent = "Success!";
           document.getElementById("message").innerHTML =
-            "Thank you! Your product is on its way!" +
+            `Thank you, ${event.detail.payment_method_data.name}! Your payment has been received!` +
             "<br>" +
-            "Order: " +
-            event.detail.metadata.sales_order;
+            "Invoice Number: " +
+            event.detail.metadata.InvoiceNumber;
           document.getElementById("image").src = "img/logo.svg";
           document.getElementById("action").textContent = "Home";
-        }
 
-        document.getElementById("action").href = "bike.html";
-        document.getElementById("feedback").style.display = "block";
+          if (event.detail.paid) {
+            // send a post request to the function to intimate that the payment is done
+            let checkoutId = event.detail.id;
+            let params = new URL(document.location).searchParams;
+            let itemId = params.get("item_id");
+            fetch(
+              "https://sandy-power-pay-rapyd.azurewebsites.net/api/powerPayCheckout?type=callback_from_checkout_page",
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  checkout_id: checkoutId,
+                  item_id: itemId,
+                  status: "success",
+                  invoice_number:event.detail.metadata.InvoiceNumber
+                }),
+              }
+            ).then((res) => {
+              console.log("Request complete! response:", res);
+            });
+          }
+
+          document.getElementById("action").href = "bike.html";
+          document.getElementById("feedback").style.display = "block";
+        }
       }
     </script>
 

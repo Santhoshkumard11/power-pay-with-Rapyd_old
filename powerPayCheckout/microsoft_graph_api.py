@@ -62,7 +62,30 @@ class GraphClient:
             logging.info(f"Successfully retrieved details on URL - {url}")
             return graph_result_data
 
-        else:
+        elif method == "PATCH":
+            assert payload
+
+            logging.info(f"Sending a patch request to - {url}")
+
+            try:
+
+                graph_result_data = requests.patch(
+                    url,
+                    headers={
+                        "Authorization": "Bearer " + self.access_token,
+                        "Content-Type": "application/json",
+                    },
+                    data=payload,
+                ).json()
+
+            except:
+                logging.error(f"Error while trying to patch details for URL - {url}")
+                raise
+
+            logging.info(f"Successfully patched details on URL - {url}")
+            return graph_result_data
+
+        elif method == "POST":
             assert payload
 
             logging.info(f"Sending a post request to - {url}")
@@ -82,5 +105,5 @@ class GraphClient:
                 logging.error(f"Error while trying to post details for URL - {url}")
                 raise
 
-            logging.info(f"Successfully retrieved details on URL - {url}")
+            logging.info(f"Successfully posted details on URL - {url}")
             return graph_result_data
