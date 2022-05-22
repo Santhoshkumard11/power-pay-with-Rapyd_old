@@ -1,5 +1,6 @@
 import logging
 import json
+from unittest import result
 import requests
 import os
 
@@ -12,7 +13,7 @@ def make_request(method: str, headers: dict, url_path: str, payload: dict):
     if method == "POST":
         post_request_result = requests.post(url_path, data=payload, headers=headers)
 
-    return post_request_result
+    return json.loads(post_request_result.text)
 
 
 def generate_checkout_id(price: str, invoice_number: str):
@@ -41,7 +42,11 @@ def generate_checkout_id(price: str, invoice_number: str):
             payload=body,
             headers=get_request_header("/v1/checkout", body),
         )
-        logging.info(results)
+        if results.get("status").get("status") == "SUCCESS":
+            logging.info(results)
+            return results.get("data").get("id")
+
+        return False
 
     except:
         logging.info("There is an error while requesting checkout ID from Rapyd")

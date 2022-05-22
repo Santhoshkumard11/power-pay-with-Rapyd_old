@@ -42,7 +42,7 @@ def get_request_header(path: str, body: str, method="post"):
     access_key = os.getenv("RAPYD_ACCESS_KEY")
     secret_key = os.getenv("RAPYD_SECRET_KEY")
 
-    to_sign = method + path + salt + str(timestamp) + access_key + secret_key + body
+    to_sign = method + path + salt + str(timestamp) + access_key + secret_key + body.replace(" ", "")
 
     h = hmac.new(bytes(secret_key, "utf-8"), bytes(to_sign, "utf-8"), hashlib.sha256)
 

@@ -1,7 +1,6 @@
 import json
 import logging
 import mimetypes
-import re
 import azure.functions as func
 
 # from powerPayCheckout.rapyd_client import generate_checkout_id

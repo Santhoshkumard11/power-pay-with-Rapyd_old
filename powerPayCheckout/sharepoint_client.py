@@ -1,13 +1,15 @@
 import logging
 import json
+import os
 from powerPayCheckout.constants import SHAREPOINT_URLS
+from powerPayCheckout.helpers import generate_invoice_number
 from powerPayCheckout.microsoft_graph_api import GraphClient
+from powerPayCheckout.rapyd_client import generate_checkout_id
 
 
 class SharePointClient:
     def __init__(self, msft_graph_client: GraphClient) -> None:
-        # self.site_id = os.getenv("SITE_ID")
-        self.site_id = "z3dr3.sharepoint.com,0d7d104c-d415-49ec-b2a4-ace5a6ac04ba,87a496e5-1b7d-4eea-ad53-fc761125916a"
+        self.site_id = os.getenv("SITE_ID")
         self.msft_graph_client = msft_graph_client
 
     def get_all_lists(self):
@@ -19,14 +21,24 @@ class SharePointClient:
 
     def create_list_item(self, invoice_details):
         created_success = "Successfully created a new item with id - "
-        url = SHAREPOINT_URLS.get('create_url').format(**{"site_id": self.site_id})
+        url = SHAREPOINT_URLS.get("create_url").format(**{"site_id": self.site_id})
+
+        invoice_cost = invoice_details.get("Cost").strip()
+
+        invoice_number = generate_invoice_number().strip()
+
+        checkout_id = generate_checkout_id(invoice_cost, invoice_number)
+        
+        assert checkout_id
 
         payload = {
             "fields": {
                 "Title": invoice_details.get("Title"),
                 "Customer": invoice_details.get("Customer"),
-                "Cost": invoice_details.get("Cost"),
+                "Cost": invoice_cost,
                 "DueBy": invoice_details.get("DueBy"),
+                "InvoiceNumber": invoice_number,
+                "CheckoutID": checkout_id,
             }
         }
 
