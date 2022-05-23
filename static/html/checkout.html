@@ -52,7 +52,7 @@
       <div class="container">
         <!-- Feedback -->
         <div class="row justify-content-center">
-          <div class="col text-center my-4" style="display: none" id="feedback">
+          <div class="col text-center my-4" style="display: true" id="feedback">
             <img src="" id="image" alt="" height="120" class="mt-2" />
             <h3 id="title" class="my-4"></h3>
             <p id="message"></p>
@@ -124,7 +124,7 @@
           document.getElementById("title").textContent = "Oops, Something went wrong!";
           document.getElementById("message").innerHTML =
             "We cannot process your payment:<br/>" + event.detail.error;
-          document.getElementById("action").textContent = "Try again";
+          document.getElementById("action").textContent = "Thanks for using our payment system";
         } else {
           document.getElementById("title").textContent = "Success!";
           document.getElementById("message").innerHTML =
@@ -140,6 +140,7 @@
             let checkoutId = event.detail.id;
             let params = new URL(document.location).searchParams;
             let itemId = params.get("item_id");
+            let processedBy = params.get("processed_by");
             fetch(
               "https://sandy-power-pay-rapyd.azurewebsites.net/api/powerPayCheckout?type=callback_from_checkout_page",
               {
@@ -148,7 +149,8 @@
                   checkout_id: checkoutId,
                   item_id: itemId,
                   status: "success",
-                  invoice_number:event.detail.metadata.InvoiceNumber
+                  invoice_number:event.detail.metadata.InvoiceNumber,
+                  processed_by: processedBy
                 }),
               }
             ).then((res) => {

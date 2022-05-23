@@ -28,7 +28,7 @@ class SharePointClient:
         invoice_number = generate_invoice_number().strip()
 
         checkout_id = generate_checkout_id(invoice_cost, invoice_number)
-        
+
         assert checkout_id
 
         payload = {
@@ -65,6 +65,7 @@ class SharePointClient:
         status: str = body.get("status")
         item_id = body.get("item_id")
         item_status = ""
+        processed_by = body.get("processed_by")
 
         assert item_id and status
 
@@ -78,7 +79,9 @@ class SharePointClient:
             **{"site_id": self.site_id, "item_id": item_id}
         )
 
-        payload = {"Status": item_status}
+        payload = {"Status": item_status, "ProcessedBy": processed_by}
+
+        logging.info(f"Payload to update - {payload}")
 
         graph_result = self.msft_graph_client.send_msft_graph_request(
             url, "PATCH", json.dumps(payload)
