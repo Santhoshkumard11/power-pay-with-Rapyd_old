@@ -62,10 +62,9 @@ class SharePointClient:
 
         # TODO: validate the checkout id and item id before proceeding with the update
         # checkout_id = body.get("checkout_id")
-        status: str = body.get("status")
-        item_id = body.get("item_id")
-        item_status = ""
-        processed_by = body.get("processed_by")
+        status: str = body.get("status").strip()
+        item_id = body.get("item_id").strip()
+        # processed_by = body.get("processed_by").strip()
 
         assert item_id and status
 
@@ -79,7 +78,8 @@ class SharePointClient:
             **{"site_id": self.site_id, "item_id": item_id}
         )
 
-        payload = {"Status": item_status, "ProcessedBy": processed_by}
+        payload = {"Status": item_status}
+        # payload = {"Status": item_status, "ProcessedByLookupId": "6"}
 
         logging.info(f"Payload to update - {payload}")
 
