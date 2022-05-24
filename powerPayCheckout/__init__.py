@@ -34,8 +34,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         #     return func.HttpResponse(json.dumps(json_response_payload), status_code=200)
 
         if request_type == "webhook":
-            logging.info("We got a callback from Rapyd")
-            update_list_item(req)
+            logging.info(f"We got a callback from Rapyd webhook - {req.get_json()}")
+            # update_list_item(req)
             return func.HttpResponse(json.dumps({"status": 900}), status_code=200)
 
         elif request_type == "callback_from_checkout_page":

@@ -13,11 +13,11 @@
       crossorigin="anonymous"
     />
 
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="static/css/style.css" />
 
     <link rel="icon" href="image/logo.png" type="image/png" sizes="16x16" />
 
-    <title>PowerPay Checkout - Sandy</title>
+    <title>Power Pay Checkout - Sandy</title>
   </head>
 
   <body>
@@ -52,7 +52,7 @@
       <div class="container">
         <!-- Feedback -->
         <div class="row justify-content-center">
-          <div class="col text-center my-4" style="display: true" id="feedback">
+          <div class="col text-center my-4" style="display: none" id="feedback">
             <img src="" id="image" alt="" height="120" class="mt-2" />
             <h3 id="title" class="my-4"></h3>
             <p id="message"></p>
@@ -78,7 +78,7 @@
             <script>
               document.write(new Date().getFullYear());
             </script>
-            , PowerPay powered by Rapyd.
+            , Power Pay powered by Rapyd.
           </div>
         </div>
       </div>
@@ -121,10 +121,13 @@
       // display information to the user
       function feedback(event) {
         if (event.detail.error) {
-          document.getElementById("title").textContent = "Oops, Something went wrong!";
+          document.getElementById("feedback").style.display = "block";
+          document.getElementById("title").textContent =
+            "Oops, Something went wrong!";
           document.getElementById("message").innerHTML =
             "We cannot process your payment:<br/>" + event.detail.error;
-          document.getElementById("action").textContent = "Thanks for using our payment system";
+          document.getElementById("action").textContent =
+            "Thanks for using our payment system";
         } else {
           document.getElementById("title").textContent = "Success!";
           document.getElementById("message").innerHTML =
@@ -141,19 +144,20 @@
             let params = new URL(document.location).searchParams;
             let itemId = params.get("item_id");
             let processedBy = params.get("processed_by");
-            fetch(
-              "https://sandy-power-pay-rapyd.azurewebsites.net/api/powerPayCheckout?type=callback_from_checkout_page",
-              {
-                method: "POST",
-                body: JSON.stringify({
-                  checkout_id: checkoutId,
-                  item_id: itemId,
-                  status: "success",
-                  invoice_number:event.detail.metadata.InvoiceNumber,
-                  processed_by: processedBy
-                }),
-              }
-            ).then((res) => {
+            var currentUrl = window.location.href.split("?")[0];
+            console.log(
+              "The payment was successful, updating the payment status."
+            );
+            fetch(`${currentUrl}?type=callback_from_checkout_page`, {
+              method: "POST",
+              body: JSON.stringify({
+                checkout_id: checkoutId,
+                item_id: itemId,
+                status: "success",
+                invoice_number: event.detail.metadata.InvoiceNumber,
+                processed_by: processedBy,
+              }),
+            }).then((res) => {
               console.log("Request complete! response:", res);
             });
           }
