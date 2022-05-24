@@ -123,9 +123,9 @@
         if (event.detail.error) {
           document.getElementById("feedback").style.display = "block";
           document.getElementById("title").textContent =
-            "Oops, Something went wrong!";
+            "Hey, you've already successfully done the checkout!";
           document.getElementById("message").innerHTML =
-            "We cannot process your payment:<br/>" + event.detail.error;
+            "We cannot process your request again.";
           document.getElementById("action").textContent =
             "Thanks for using our payment system";
         } else {
