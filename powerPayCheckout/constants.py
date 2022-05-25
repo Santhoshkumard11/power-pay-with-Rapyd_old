@@ -1,7 +1,5 @@
 import os
 
-# TODO: try to authenticate the invoice coming through
-
 COMPANY_AUTH_KEY_MAPPING = ["Microsoft", os.getenv("MICROSOFT_ACCESS_KEY")]
 
 SHAREPOINT_URLS = {

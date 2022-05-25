@@ -6,6 +6,8 @@ import os
 
 class GraphClient:
     def __init__(self) -> None:
+        """Initialize the secrets and IDs needed for authentication and authorization"""
+
         self.client_id = os.getenv("MSFT_CLIENT_ID")
         self.client_secret = os.getenv("MSFT_CLIENT_SECRET")
         self.tenant_id = os.getenv("TENANT_ID")
@@ -13,6 +15,8 @@ class GraphClient:
         self.access_token = ""
 
     def get_graph_access_token(self):
+        """Retrieve the Microsoft Graph access token and set it"""
+
         logging.info("Trying to fetch the MSFT Graph API access token")
 
         # connecting to the client app
@@ -22,6 +26,7 @@ class GraphClient:
             authority=self.authority,
         )
 
+        # gives us access to the scopes within the application
         scopes = ["https://graph.microsoft.com/.default"]
 
         result = None
@@ -42,11 +47,23 @@ class GraphClient:
         else:
             logging.info(f"Token can't be fetched, {result['error']}")
 
-    def send_msft_graph_request(self, url: str, method="GET", payload=None):
+    def send_msft_graph_request(self, url: str, method="GET", payload=None) -> dict:
+        """Generic method to send various type of request to Graph APIs
+
+        Args:
+            url (str): request URL
+            method (str, optional): method type. Defaults to "GET".
+            payload (str, optional): body of the request. Defaults to None.
+
+        Returns:
+            dict: response from the API
+        """
 
         # if we don't have an access token then get a new one
         if not self.access_token:
             self.get_graph_access_token()
+
+        return_response = ""
 
         if method == "GET":
             logging.info(f"Sending in Graph API GET request to - {url}")
@@ -60,9 +77,11 @@ class GraphClient:
                 raise
 
             logging.info(f"Successfully retrieved details on URL - {url}")
-            return graph_result_data
+
+            return_response = graph_result_data
 
         elif method == "PATCH":
+            # we need a payload for sure
             assert payload
 
             logging.info(f"Sending a patch request to - {url}")
@@ -83,9 +102,11 @@ class GraphClient:
                 raise
 
             logging.info(f"Successfully patched details on URL - {url}")
-            return graph_result_data
+
+            return_response = graph_result_data
 
         elif method == "POST":
+            # we need a payload for sure
             assert payload
 
             logging.info(f"Sending a post request to - {url}")
@@ -106,4 +127,7 @@ class GraphClient:
                 raise
 
             logging.info(f"Successfully posted details on URL - {url}")
-            return graph_result_data
+
+            return_response = graph_result_data
+
+        return return_response

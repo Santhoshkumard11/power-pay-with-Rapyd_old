@@ -1,13 +1,24 @@
 import logging
 import json
-from unittest import result
 import requests
 import os
 
 from powerPayCheckout.helpers import get_request_header
 
 
-def make_request(method: str, headers: dict, url_path: str, payload: dict):
+def make_request(method: str, headers: dict, url_path: str, payload: dict) -> dict:
+    """Send request to Rapyd client
+
+    Args:
+        method (str): method type
+        headers (dict): request header
+        url_path (str): request URL
+        payload (dict): request body
+
+    Returns:
+        dict: request response
+    """
+
     logging.info("Sending in POST request to Rapyd")
 
     if method == "POST":
@@ -16,9 +27,20 @@ def make_request(method: str, headers: dict, url_path: str, payload: dict):
     return json.loads(post_request_result.text)
 
 
-def generate_checkout_id(price: str, invoice_number: str):
+def generate_checkout_id(price: str, invoice_number: str) -> str:
+    """Generate checkout ID for the given price
+
+    Args:
+        price (str): price for which the checkout ID has to be created
+        invoice_number (str): invoice number used to track the checkout ID and payment status
+
+    Returns:
+        str: checkout ID
+    """
+
     logging.info(f"Starting to generate checkout ID for price - {price}")
     try:
+        checkout_id = ""
 
         body = json.dumps(
             {
@@ -36,20 +58,22 @@ def generate_checkout_id(price: str, invoice_number: str):
             }
         )
 
+        # send a request to the Rapyd APi to generate the checkout ID
         results = make_request(
             method="POST",
             url_path=os.getenv("RAPYD_URL"),
             payload=body,
             headers=get_request_header("/v1/checkout", body),
         )
+
         if results.get("status").get("status") == "SUCCESS":
             logging.info(results)
-            return results.get("data").get("id")
-
-        return False
+            checkout_id = results.get("data").get("id")
 
     except:
         logging.info("There is an error while requesting checkout ID from Rapyd")
         raise
 
     logging.info(f"Successfully generated checkout ID for price - {price}")
+
+    return checkout_id

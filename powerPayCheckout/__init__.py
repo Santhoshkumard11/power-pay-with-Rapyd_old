@@ -12,32 +12,23 @@ from powerPayCheckout.handler import (
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Python HTTP trigger function processed a request.")
+    logging.info("Triggered powerPayCheckout API!")
 
     checkout_page = "static/html/checkout.html"
     try:
 
         request_type = get_params("type", req)
 
-        # if request_type == "generate":
-        #     logging.info("Received a generate request")
-        #     price = get_params("price", req)
-        #     if not price:
-        #         return func.HttpResponse(
-        #             "Please pass in the price to generate a checkout ID"
-        #         )
-
-        #     result_checkout_id = generate_checkout_id(price)
-
-        #     json_response_payload = {"checkout_id": result_checkout_id}
-
-        #     return func.HttpResponse(json.dumps(json_response_payload), status_code=200)
-
+        # Receive the callback from Rapyd service
         if request_type == "webhook":
+            # as of now we don't do anything with the webhook except putting it in the logs for further reference
             logging.info(f"We got a callback from Rapyd webhook - {req.get_json()}")
             # update_list_item(req)
-            return func.HttpResponse(json.dumps({"status": 900}), status_code=200)
+            return func.HttpResponse(
+                json.dumps({"message": "success"}), status_code=200
+            )
 
+        # Receive the actual payment success just after the payment is complete from the toolkit integrated page
         elif request_type == "callback_from_checkout_page":
             logging.info("We got a callback from Rapyd Checkout page")
             return_message = update_list_item(req)
@@ -45,12 +36,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 json.dumps({"message": return_message}), status_code=200
             )
 
+        # generate the checkout ID for the given amount and upload it to SharePoint
         elif request_type == "create_invoice":
             return_message = create_sharepoint_list(req)
             return func.HttpResponse(
                 json.dumps({"message": return_message}), status_code=200
             )
 
+        # render the checkout toolkit page
         elif request_type == "checkout":
             # display the checkout page
             params_dict = req.params
@@ -58,6 +51,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 f"Displaying checkout page for item id - {params_dict.get('item_id')}"
             )
 
+            # load the html page and return it to the browser
             with open(checkout_page, "rb") as f:
                 mimetype = mimetypes.guess_type(checkout_page)
                 return func.HttpResponse(
@@ -69,9 +63,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # return something to the user when things go wrong
         return func.HttpResponse(
-            json.dumps({"message": "There is a error while processing this request."})
+            json.dumps({"message": "There is a error while processing this request."}),
+            status_code=200,
         )
 
+    # a default return message to show that endpoint is active
     return func.HttpResponse(
         json.dumps({"message": "This endpoint is working and active"}), status_code=200
     )
