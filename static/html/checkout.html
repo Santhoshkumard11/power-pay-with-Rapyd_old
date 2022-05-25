@@ -141,6 +141,7 @@
           if (event.detail.paid) {
             // send a post request to the function to intimate that the payment is done
             let checkoutId = event.detail.id;
+            // get the params in the URL
             let params = new URL(document.location).searchParams;
             let itemId = params.get("item_id");
             let processedBy = params.get("processed_by");
@@ -148,6 +149,7 @@
             console.log(
               "The payment was successful, updating the payment status."
             );
+            // send the payment status to the backend API to be updated onto SharePoint
             fetch(`${currentUrl}?type=callback_from_checkout_page`, {
               method: "POST",
               body: JSON.stringify({
